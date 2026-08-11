@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 import tracksdata as td
 
+from hoct import predict, solution_to_tracking_result
 from hoct.features.constants import REGIONPROPS
 from hoct.features.graph import create_graph
 from hoct.tracking import ILPSolverConfig
@@ -170,6 +171,28 @@ class TestCreateGraphFromLabels:
         assert graph.num_nodes() == 0
         assert graph.num_edges() == 0
         assert {"label_id", "scaled_z", "scaled_y", "scaled_x"} <= set(graph.node_attr_keys())
+
+    def test_predict_returns_an_exact_empty_result_without_running_the_model(self):
+        labels = np.zeros((2, 8, 8), dtype=np.uint16)
+
+        graph = predict(None, labels=labels, distance_threshold=5.0, n_neighbors=3, max_delta_t=1)
+        result = solution_to_tracking_result(graph)
+
+        assert result.detections.shape == (0, 2)
+        assert result.links.shape == (0, 4)
+        assert result.similarities.shape == (0,)
+
+    def test_predict_returns_isolated_detections_when_no_candidate_link_exists(self):
+        labels = np.zeros((2, 16, 16), dtype=np.uint16)
+        labels[0, 1:3, 1:3] = 7
+        labels[1, 12:14, 12:14] = 42
+
+        graph = predict(None, labels=labels, distance_threshold=1.0, n_neighbors=3, max_delta_t=1)
+        result = solution_to_tracking_result(graph)
+
+        np.testing.assert_array_equal(result.detections, [[0, 7], [1, 42]])
+        assert result.links.shape == (0, 4)
+        assert result.similarities.shape == (0,)
 
 
 class TestSolverConfig:

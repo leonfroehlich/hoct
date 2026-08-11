@@ -200,7 +200,8 @@ link_table = result.link_table()  # float64 (M, 5) convenience representation
 
 The arrays owned by `result` are defensive, read-only copies and remain valid
 independently of the graph. Label values may be sparse and may be reused in
-different frames.
+different frames. If no candidate link exists, prediction returns all input
+detections as isolated objects with exact empty link and similarity arrays.
 
 See `hoct.predict` for the full signature (custom solver config,
 tiled inference, test-time augmentation, etc.).
