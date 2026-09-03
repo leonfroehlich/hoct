@@ -174,6 +174,7 @@ def create_graph(
 
     td.nodes.RegionPropsNodes(
         extra_properties=extra_properties,
+        spacing=scale[1:],
     ).add_nodes(graph, labels=labels, intensity_image=images)
 
     # Add scaled position attributes
